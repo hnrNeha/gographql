@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GraphQL CRUD App</title>
+</head>
+<body>
+  <div>
+    <h1>Create Item</h1>
+    <input type="text" id="itemName" placeholder="Enter item name">
+    <button onclick="createItem()">Create Item</button>
+  </div>
+
+  <div>
+    <h1>Get Item by ID</h1>
+    <input type="text" id="itemId" placeholder="Enter item ID">
+    <button onclick="getItem()">Get Item</button>
+    <p id="itemResult"></p>
+  </div>
+
+  <script>
+    const apiUrl = 'http://localhost:8080/graphql';
+
+    async function createItem() {
+      const itemName = document.getElementById('itemName').value;
+      const query = `
+        mutation {
+          createItem(name: "${itemName}") {
+            id
+            name
+          }
+        }
+      `;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+
+      const data = await response.json();
+      console.log(data);
+    }
+
+    async function getItem() {
+      const itemId = document.getElementById('itemId').value;
+      const query = `
+        query {
+          item(id: "${itemId}") {
+            id
+            name
+          }
+        }
+      `;
+
+      const response = await fetch(apiUrl + `?query=${encodeURIComponent(query)}`);
+      const data = await response.json();
+
+      const itemResult = document.getElementById('itemResult');
+      if (data.data && data.data.item) {
+        itemResult.innerText = `Item ID: ${data.data.item.id}, Name: ${data.data.item.name}`;
+      } else {
+        itemResult.innerText = 'Item not found.';
+      }
+    }
+  </script>
+</body>
+</html>
